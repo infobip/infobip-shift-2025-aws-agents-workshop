@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unicorn-spring-ai-agent
+  labels:
+    app: unicorn-spring-ai-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unicorn-spring-ai-agent
+  template:
+    metadata:
+      labels:
+        app: unicorn-spring-ai-agent
+    spec:
+      containers:
+      - name: unicorn-spring-ai-agent
+        image: unicorn-spring-ai-agent:0.0.1-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_REGION
+              optional: true
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_SECRET_ACCESS_KEY
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: unicorn-spring-ai-agent-config
